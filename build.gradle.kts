@@ -1,60 +1,83 @@
 import org.gradle.internal.os.OperatingSystem
+import org.jetbrains.kotlin.gradle.plugin.mpp.*
 
 plugins {
-    kotlin("multiplatform") version "1.4.21"
+	kotlin("multiplatform") version "1.5.0"
+	application
 }
 
 repositories {
-    jcenter()
-    maven("https://dl.bintray.com/dominaezzz/kotlin-native")
+	mavenCentral()
+	maven("https://maven.pkg.github.com/Dominaezzz/matrix-kt") {
+		credentials {
+			username = System.getenv("GITHUB_USER") // Your GitHub username
+			password = System.getenv("GITHUB_TOKEN") // A GitHub token with `read:packages`
+		}
+	}
 }
 
 val host: OperatingSystem = OperatingSystem.current()
 
-val kglVersion = "0.1.10"
+val kglVersion = "0.1.11"
 val lwjglVersion = "3.2.2"
-
 val lwjglNatives = when {
-    host.isLinux -> "natives-linux"
-    host.isMacOsX -> "natives-macos"
-    host.isWindows -> "natives-windows"
-    else -> error("Unrecognized or unsupported Operating system. Please set \"lwjglNatives\" manually")
+	host.isLinux -> "natives-linux"
+	host.isMacOsX -> "natives-macos"
+	host.isWindows -> "natives-windows"
+	else -> error("Unrecognized or unsupported Operating system. Please set \"lwjglNatives\" manually")
+}
+
+application {
+	mainClass.set("Main_Kt")
 }
 
 kotlin {
-    jvm()
-    mingwX64("mingw") {
-        binaries {
-            executable("native") {
-                entryPoint = "main"
-            }
-        }
-    }
+	jvm()
 
-    sourceSets {
-        all {
-            languageSettings.useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
-        }
+	val target = when {
+		host.isLinux -> linuxX64("linux")
+		host.isMacOsX -> macosX64("macos")
+		host.isWindows -> mingwX64("mingw")
+		else -> error("Unrecognized or unsupported Operating system.")
+	}
 
-        named("commonMain") {
-            dependencies {
-                implementation("com.kgl:kgl-opengl:$kglVersion")
-                implementation("com.kgl:kgl-glfw:$kglVersion")
-            }
-        }
+	targets.withType<KotlinNativeTarget> {
+		binaries {
+			executable {
+				entryPoint = "main"
+			}
+		}
+	}
 
-        named("jvmMain") {
-            dependencies {
-                runtimeOnly("org.lwjgl:lwjgl:$lwjglVersion:$lwjglNatives")
-                runtimeOnly("org.lwjgl:lwjgl-glfw:$lwjglVersion:$lwjglNatives")
-                runtimeOnly("org.lwjgl:lwjgl-opengl:$lwjglVersion:$lwjglNatives")
-            }
-        }
+	sourceSets {
+		named("commonMain") {
+			dependencies {
+				implementation("com.kgl:kgl-opengl:$kglVersion")
+				implementation("com.kgl:kgl-glfw:$kglVersion")
+			}
+		}
 
-        named("mingwMain") {
-            dependencies {
-                implementation("com.kgl:kgl-glfw-static:$kglVersion")
-            }
-        }
-    }
+		named("jvmMain") {
+			dependencies {
+				runtimeOnly("org.lwjgl:lwjgl$lwjglVersion:$lwjglNatives")
+				runtimeOnly("org.lwjgl:lwjgl-glfw:$lwjglVersion:$lwjglNatives")
+				runtimeOnly("org.lwjgl:lwjgl-opengl:$lwjglVersion:$lwjglNatives")
+			}
+		}
+
+		targets.withType<KotlinNativeTarget> {
+			get("${name}Main").apply {
+				kotlin.srcDir("src/nativeMain/kotlin")
+				resources.srcDir("src/nativeMain/resources")
+
+				dependencies {
+					implementation("com.kgl:kgl-glfw-static:$kglVersion")
+				}
+			}
+			get("${name}Test").apply {
+				kotlin.srcDir("src/nativeTest/kotlin")
+				resources.srcDir("src/nativeTest/resources")
+			}
+		}
+	}
 }
