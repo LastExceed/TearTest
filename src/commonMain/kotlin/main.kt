@@ -11,18 +11,23 @@ fun main() {
 		GL.clearColor(0f, 0f, 0f, 1f)
 		GL.color3f(1f, 1f, 1f)
 
-		setKeyCallback { _, key, scancode, action, mods ->
-			if (key == KeyboardKey.F11 && action == Action.Press) {
-				Glfw.primaryMonitor!!.run {
-					setMonitor(
-						if (monitor == null) this else null,
-						0,
-						0,
-						videoMode.width,
-						videoMode.height,
-						videoMode.refreshRate
-					)
+		setKeyCallback { _, key, _, action, _ ->
+			if (action != Action.Press) return@setKeyCallback
+
+			when (key) {
+				KeyboardKey.F11 -> {
+					Glfw.primaryMonitor!!.run {
+						val (monitor, width, height) =
+							if (monitor == null)
+								Triple(this, videoMode.width, videoMode.height)
+							else
+								Triple(null, 800, 600)
+
+						setMonitor(monitor, 100, 100, width, height, videoMode.refreshRate)
+					}
 				}
+
+				else -> {}
 			}
 		}
 
@@ -30,7 +35,7 @@ fun main() {
 			GL.viewport(0, 0, width, height)
 		}
 
-		setCursorPosCallback {_, x, y ->
+		setCursorPosCallback { _, x, y ->
 			val xf = (x.toFloat() / size.first) * 2f - 1f
 
 			GL.clear(GL.COLOR_BUFFER_BIT)
