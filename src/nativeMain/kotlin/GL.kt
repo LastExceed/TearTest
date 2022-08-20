@@ -1,7 +1,7 @@
 import com.kgl.opengl.glClear
 import com.kgl.opengl.glClearColor
 import com.kgl.opengl.glViewport
-import copengl.*
+import platform.opengl32.*
 
 actual object GL {
 	actual fun clearColor(r: Float, g: Float, b: Float, a: Float) = glClearColor(r,g,b,a)
@@ -12,7 +12,7 @@ actual object GL {
 	actual fun vertex2f(x: Float, y: Float) = glVertex2f(x, y)
 	actual fun end() = glEnd()
 
-	actual fun createCapabilities(){ }
+	actual fun createCapabilities() {}
 
 	actual val COLOR_BUFFER_BIT = GL_COLOR_BUFFER_BIT
 	actual val LINES = GL_LINES

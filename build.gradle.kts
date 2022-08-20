@@ -2,7 +2,7 @@ import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 
 plugins {
-	kotlin("multiplatform") version "1.5.0"
+	kotlin("multiplatform") version "1.7.10"
 	application
 }
 
@@ -19,7 +19,7 @@ repositories {
 val host: OperatingSystem = OperatingSystem.current()
 
 val kglVersion = "0.1.11"
-val lwjglVersion = "3.2.2"
+val lwjglVersion = "3.3.1"
 val lwjglNatives = when {
 	host.isLinux -> "natives-linux"
 	host.isMacOsX -> "natives-macos"
@@ -34,7 +34,7 @@ application {
 kotlin {
 	jvm()
 
-	val target = when {
+	when {
 		host.isLinux -> linuxX64("linux")
 		host.isMacOsX -> macosX64("macos")
 		host.isWindows -> mingwX64("mingw")
@@ -59,7 +59,7 @@ kotlin {
 
 		named("jvmMain") {
 			dependencies {
-				runtimeOnly("org.lwjgl:lwjgl$lwjglVersion:$lwjglNatives")
+				runtimeOnly("org.lwjgl:lwjgl:$lwjglVersion:$lwjglNatives")
 				runtimeOnly("org.lwjgl:lwjgl-glfw:$lwjglVersion:$lwjglNatives")
 				runtimeOnly("org.lwjgl:lwjgl-opengl:$lwjglVersion:$lwjglNatives")
 			}
