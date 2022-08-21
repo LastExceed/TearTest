@@ -19,7 +19,7 @@ repositories {
 val host: OperatingSystem = OperatingSystem.current()
 
 val kglVersion = "0.1.11"
-val lwjglVersion = "3.3.1"
+val lwjglVersion = "3.2.2"
 val lwjglNatives = when {
 	host.isLinux -> "natives-linux"
 	host.isMacOsX -> "natives-macos"
